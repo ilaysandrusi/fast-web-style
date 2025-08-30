@@ -674,7 +674,7 @@ const Game = () => {
       </div>
 
       {/* Pause Overlay */}
-      <div id="pause" className="absolute inset-0 grid place-items-center z-10 backdrop-blur-md bg-black/30" hidden>
+      <div id="pause" className="absolute inset-0 grid place-items-center z-10 backdrop-blur-md bg-black/30 hidden">
         <div className="card-game w-full max-w-[760px] text-center p-8 mx-4">
           <h2 className="text-2xl font-bold mb-4">Paused</h2>
           <p className="mb-4">Quick links</p>
@@ -686,12 +686,12 @@ const Game = () => {
       </div>
 
       {/* Panel Overlay */}
-      <div id="panel" className="absolute inset-0 grid place-items-center z-10 backdrop-blur-md bg-black/30" hidden>
+      <div id="panel" className="absolute inset-0 grid place-items-center z-10 backdrop-blur-md bg-black/30 hidden">
         <div id="panelContent" className="card-game w-full max-w-[760px] text-center p-8 mx-4"></div>
       </div>
 
       {/* Finish Overlay */}
-      <div id="finish" className="absolute inset-0 grid place-items-center z-10 backdrop-blur-md bg-black/30" hidden>
+      <div id="finish" className="absolute inset-0 grid place-items-center z-10 backdrop-blur-md bg-black/30 hidden">
         <div className="card-game w-full max-w-[760px] text-center p-8 mx-4">
           <h2 className="text-2xl font-bold mb-4">Thanks for playing!</h2>
           <p id="summary" className="mb-4"></p>
