@@ -304,9 +304,14 @@ const Game = () => {
 
     // Button event handlers
     const handleStart = () => {
-      if (menu) menu.hidden = true;
+      console.log('🎮 Start button clicked!');
+      if (menu) {
+        menu.style.display = 'none';
+        console.log('Menu hidden');
+      }
       reset();
       playing = true;
+      console.log('Game started, playing =', playing);
     };
 
     const handleHow = () => {
@@ -629,13 +634,13 @@ const Game = () => {
   }, []);
 
   return (
-    <div id="wrap" className="relative grid place-items-center h-screen">
+    <div id="wrap" className="fixed inset-0 grid place-items-center bg-gradient-to-b from-sky to-ground">
       <canvas 
         ref={canvasRef}
         id="game" 
         width="960" 
         height="540"
-        className="w-full max-w-[980px] h-auto max-h-[552px] aspect-[16/9] block rounded-[18px] shadow-[0_18px_60px_rgba(0,0,0,0.5),inset_0_0_0_1px_rgba(255,255,255,0.06)] border border-white/10"
+        className="w-full max-w-[98vw] h-auto max-h-[90vh] aspect-[16/9] block rounded-[18px] shadow-[0_18px_60px_rgba(0,0,0,0.5),inset_0_0_0_1px_rgba(255,255,255,0.06)] border border-white/10"
         style={{
           background: 'linear-gradient(180deg, #0b1222, #0b1324)'
         }}
@@ -655,7 +660,7 @@ const Game = () => {
       </div>
 
       {/* Menu Overlay */}
-      <div id="menu" className="absolute inset-0 grid place-items-center z-10 backdrop-blur-md bg-black/30">
+      <div id="menu" className="fixed inset-0 grid place-items-center z-50 backdrop-blur-md bg-black/50">
         <div className="card-game w-full max-w-[760px] text-center p-8 mx-4">
           <h1 className="gradient-text text-4xl md:text-5xl font-black mb-4">Interactive Resume Game</h1>
           <p className="opacity-80 mb-6 text-foreground/90 leading-relaxed">
