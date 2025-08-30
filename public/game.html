@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="game-styles.css">
+  <title>Interactive Resume Game</title>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="game" width="960" height="540"></canvas>
+
+  <div class="hud" aria-live="polite">
+    <div class="badge" id="stageBadge">Stage: 1/4 – About</div>
+    <div class="badge" id="timeBadge">Time: 0:00</div>
+    <div class="badge" id="hintBadge">Arrows: move • Space: jump • E: interact • Esc: pause</div>
+  </div>
+
+  <div class="overlay" id="menu">
+    <div class="card">
+      <h1>Interactive Resume Game</h1>
+      <p style="opacity:.8; margin-top:0">A fun and challenging way to get to know me - with every level you unlock, you'll discover more about who I am.<br>Use Arrows to move, Space to jump. Press E near the info panels to open it.<br> 4 short stages.</p>
+      <div class="btns">
+        <button id="startBtn">Start Game</button>
+        <button id="howBtn" class="ghost">Controls</button>
+      </div>
+      <p style="margin-top:12px; opacity:.7">Tip: Press <span class="kbd">E</span> near glowing signs to open info panels.</p>
+    </div>
+  </div>
+
+  <div class="overlay" id="pause" hidden>
+    <div class="card">
+      <h2>Paused</h2>
+      <p>Quick links</p>
+      <div class="btns" id="quickLinks"></div>
+      <div class="btns" style="margin-top:8px">
+        <button id="resumeBtn" class="secondary">Resume</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="panel" hidden>
+    <div class="card" id="panelContent"></div>
+  </div>
+
+  <div class="overlay" id="finish" hidden>
+    <div class="card">
+      <h2>Thanks for playing!</h2>
+      <p id="summary"></p>
+      <div class="btns" id="finishLinks"></div>
+      <div class="btns" style="margin-top:8px">
+        <button id="shareBtn" class="ghost">Share summary</button>
+        <button id="restartBtn" class="secondary">Restart</button>
+      </div>
+      <div id="shareFallback" style="margin-top:10px; display:none">
+        <p style="opacity:.8; margin:6px 0 4px">Copy this text manually (Clipboard blocked in some sandboxes):</p>
+        <textarea id="shareText" rows="3" style="width:100%; background:#0b0f1a; color:#e5e7eb; border:1px solid #ffffff1a; border-radius:10px; padding:8px"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div class="corner">© <span id="year"></span> • Built with Gaming Aesthetics</div>
+</div>
+
+<script>
+(()=>{
+  // =====================
+  // Content (edit here)
+  // =====================
+  const CONTENT = {
+    candidate: {
+      name: 'Your Name',
+      title: 'Web Developer',
+      about: 'A passionate developer creating immersive web experiences with modern technologies and gaming-inspired aesthetics.',
+    },
+    skills: ['React','TypeScript','JavaScript', 'Tailwind CSS', 'Node.js', 'Next.js', 'HTML5 Canvas', 'WebGL', 'Three.js', 'Animation', 'Game Development', 'UI/UX Design', 'Performance Optimization'],
+    projects: [
+      {name:'Gaming Portfolio', url:'#', note:'Interactive resume game built with HTML5 Canvas, featuring physics-based gameplay and smooth animations.'},
+      {name:'Web App Dashboard', url:'#', note:'Modern React dashboard with dark theme, real-time data visualization, and responsive design.'},
+    ],
+    links: [
+      {label:'GitHub', url:'https://github.com'},
+      {label:'LinkedIn', url:'https://linkedin.com'},
+      {label:'Portfolio', url:'#'},
+      {label:'Email', url:'mailto:hello@example.com'},
+    ],
+  };
+
+  // =====================
+  // Canvas + Game setup
+  // =====================
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+
+  const stageBadge = document.getElementById('stageBadge');
+  const timeBadge  = document.getElementById('timeBadge');
+  const hintBadge  = document.getElementById('hintBadge');
+
+  const menu   = document.getElementById('menu');
+  const pause  = document.getElementById('pause');
+  const panel  = document.getElementById('panel');
+  const panelContent = document.getElementById('panelContent');
+  const finish = document.getElementById('finish');
+  const summary = document.getElementById('summary');
+  const finishLinks = document.getElementById('finishLinks');
+  const quickLinks  = document.getElementById('quickLinks');
+
+  const startBtn = document.getElementById('startBtn');
+  const howBtn = document.getElementById('howBtn');
+  const resumeBtn = document.getElementById('resumeBtn');
+  const restartBtn = document.getElementById('restartBtn');
+  const shareBtn = document.getElementById('shareBtn');
+  const shareFallback = document.getElementById('shareFallback');
+  const shareText = document.getElementById('shareText');
+  const toast = document.getElementById('toast');
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // ===== Physics (time-based) =====
+  const W = canvas.width, H = canvas.height;
+  const GROUND_H = 64;
+  const gravity = 2000;        // px/s^2
+  const moveSpeed = 300;       // px/s
+  const jumpVy = -600;         // px/s
+
+  const stages = [
+    {name:'About',    start:0,      len:1400, difficulty:0},
+    {name:'Skills',   start:1400,   len:1600, difficulty:1},
+    {name:'Projects', start:3000,   len:1800, difficulty:2},
+    {name:'Links',    start:4800,   len:1200, difficulty:3},
+  ];
+  const lastStage = stages[stages.length-1];
+  const WORLD_LEN = lastStage.start + lastStage.len + 400;
+
+  // Entities
+  const platforms = []; // static ground segments & ledges
+  const movers = [];    // moving platforms
+  const enemies = [];   // simple walking bug
+  const interactors = []; // signs / gates
+  const hazards = [];   // spikes/blockers you must jump over
+
+  // Player & camera
+  const player = { x:80, y:H-GROUND_H-40, w:28, h:40, vx:0, vy:0, onGround:false, canInteract:false };
+  let camX = 0; let checkpointX = 80;
+  let keys = Object.create(null);
+  let tPrev = 0; let totalTime = 0; let playing=false; let isPaused=false; let finished=false;
+
+  // Helpers
+  const rectsOverlap = (a,b)=> (a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y);
+  const clamp=(n,min,max)=> Math.max(min, Math.min(max,n));
+  const fmtTime=(s)=>{ const m=Math.floor(s/60); const ss=Math.floor(s%60).toString().padStart(2,'0'); return `${m}:${ss}` };
+  const jumpDistance = (vx)=> (2*Math.abs(jumpVy)/gravity) * Math.abs(vx);
+
+  // Build world with real gaps (no baseline ground)
+  function addGround(x, w){ if(w<=0) return; platforms.push({x, y:H-GROUND_H, w, h:GROUND_H, type:'ground'}); }
+  function groundWithGaps(stage, gaps){
+    const start = stage.start, end = stage.start + stage.len;
+    const arr = (gaps||[]).slice().sort((a,b)=>a.x-b.x);
+    let cursor = start;
+    for(const g of arr){ addGround(cursor, Math.max(0, g.x - cursor)); cursor = Math.max(cursor, g.x + g.w); }
+    addGround(cursor, Math.max(0, end - cursor));
+  }
+  function gap(x,w){ return {x,w}; }
+  function sign(x, label){ return { kind:'sign', label, x, y:H-GROUND_H-40, w:20, h:40, seen:false }; }
+  function finishGate(x){ return { kind:'finish', x, y:H-GROUND_H-80, w:30, h:80 }; }
+  function movingPlatform(x,y,w,h, dx, dy){ return { x,y,w,h, t:0, amp:dy, baseY:y, type:'mover' }; }
+  function bug(x, y, patrol=160){ return { x, y, w:26, h:24, dir:1, left:x, right:x+patrol, type:'bug' }; }
+  function blocker(x,y,w,h){ return { x,y,w,h, type:'hazard' }; }
+
+  function buildWorld(){
+    platforms.length=0; movers.length=0; enemies.length=0; interactors.length=0; hazards.length=0;
+    
+    // Extra ground under final flag
+    platforms.push({
+      x: WORLD_LEN - 300,
+      y: H - GROUND_H,
+      w: 400,
+      h: GROUND_H,
+      type: 'ground'
+    });
+
+    // Stage 1: flat intro + one simple blocker
+    groundWithGaps(stages[0], []);
+    interactors.push(sign(stages[0].start+300, 'About'));
+    hazards.push(blocker(stages[0].start+600, H-GROUND_H-22, 30, 22));
+
+    // Stage 2: two gaps + ledge + small blocker
+    groundWithGaps(stages[1], [ gap(stages[1].start+420, 80), gap(stages[1].start+900, 120) ]);
+    platforms.push({x:stages[1].start+1200, y:H-GROUND_H-60, w:220, h:20, type:'ledge'});
+    interactors.push(sign(stages[1].start+250, 'Skills'));
+    hazards.push(blocker(stages[1].start+1050, H-GROUND_H-24, 36, 24));
+
+    // Stage 3: larger pit with moving platform + enemy + blocker
+    groundWithGaps(stages[2], [ gap(stages[2].start+380, 140) ]);
+    movers.push(movingPlatform(stages[2].start+430, H-GROUND_H-80, 120, 18, 0, 40));
+    enemies.push(bug(stages[2].start+1100, H-GROUND_H-24, 180));
+    platforms.push({x:stages[2].start+1350, y:H-GROUND_H-80, w:180, h:20, type:'ledge'});
+    interactors.push(sign(stages[2].start+260, 'Projects'));
+    hazards.push(blocker(stages[2].start+1520, H-GROUND_H-28, 44, 28));
+
+    // Stage 4: tighter jumps + finish
+    groundWithGaps(stages[3], [ gap(stages[3].start+360, 90), gap(stages[3].start+720, 110) ]);
+    interactors.push(sign(stages[3].start+120, 'Links'));
+    interactors.push(finishGate(WORLD_LEN-160));
+    hazards.push(blocker(stages[3].start+260, H-GROUND_H-26, 34, 26));
+    hazards.push(blocker(stages[3].start+540, H-GROUND_H-30, 40, 30));
+  }
+
+  // UI helpers
+  function setStageBadge(){ const st = currentStage(); stageBadge.textContent = `Stage: ${st.index+1}/4 – ${st.name}`; }
+  function currentStage(){ for(let i=stages.length-1;i>=0;i--){ if(player.x >= stages[i].start) return {index:i, name:stages[i].name}; } return {index:0, name:stages[0].name}; }
+
+  // Panels
+  function openPanelFor(label){
+    const htmlMap = {
+      'About': `
+        <h2>About – ${CONTENT.candidate.name}</h2>
+        <p style="opacity:.85">${CONTENT.candidate.title}</p>
+        <p>${CONTENT.candidate.about}</p>
+        <div class="btns" style="margin-top:12px"><button class="secondary" id="closePanel">Close</button></div>
+      `,
+      'Skills': `
+        <h2>Skills</h2>
+        <div class="list">${CONTENT.skills.map(s=>`<span class='pill'>${s}</span>`).join('')}</div>
+        <div class="btns" style="margin-top:12px"><button class="secondary" id="closePanel">Close</button></div>
+      `,
+      'Projects': `
+        <h2>Projects</h2>
+        <div>${CONTENT.projects.map(p=>`<p><strong>${p.name}</strong> – ${p.note} ${p.url&&p.url!=='#'?`<a class='link' href='${p.url}' target='_blank' rel='noopener'>Open</a>`:''}</p>`).join('')}</div>
+        <div class="btns" style="margin-top:12px"><button class="secondary" id="closePanel">Close</button></div>
+      `,
+      'Links': `
+        <h2>Links</h2>
+        <div class="btns">${CONTENT.links.map(l=>`<a href='${l.url}' target='_blank' rel='noopener'><button>${l.label}</button></a>`).join('')}</div>
+        <div class="btns" style="margin-top:12px"><button class="secondary" id="closePanel">Close</button></div>
+      `,
+    };
+    panelContent.innerHTML = htmlMap[label] || `<h2>${label}</h2>`;
+    panel.hidden = false;
+    document.getElementById('closePanel').onclick = ()=>{ panel.hidden = true; };
+  }
+
+  // Pause menu quick links
+  function buildQuickLinks(){ quickLinks.innerHTML = CONTENT.links.map(l=>`<a href='${l.url}' target='_blank' rel='noopener'><button>${l.label}</button></a>`).join(''); }
+  buildQuickLinks();
+
+  // Finish screen
+  function showFinish(){ finished = true; playing=false; isPaused=false; finish.hidden = false; pause.hidden = true; panel.hidden = true; const st = fmtTime(totalTime); summary.textContent = `Completed 4/4 stages in ${st}.`; finishLinks.innerHTML = CONTENT.links.map(l=>`<a href='${l.url}' target='_blank' rel='noopener'><button>${l.label}</button></a>`).join(''); }
+
+  // Share functionality
+  async function shareSummary(){ const text = `${CONTENT.candidate.name} – ${CONTENT.candidate.title}\nCompleted the Interactive Resume Game in ${fmtTime(totalTime)}.`; try{ if(navigator.share){ await navigator.share({text}); return true; } shareText.value = text; shareFallback.style.display='block'; shareText.focus(); shareText.select(); showToast('Copy the text above manually'); return false; }catch(err){ shareText.value = text; shareFallback.style.display='block'; shareText.focus(); shareText.select(); showToast('Copy the text above manually'); return false; } }
+
+  // Toast
+  let toastTimer=null; function showToast(msg){ toast.textContent = msg; toast.style.display='block'; clearTimeout(toastTimer); toastTimer = setTimeout(()=> toast.style.display='none', 1600); }
+
+  // Input
+  window.addEventListener('keydown', (e)=>{ keys[e.code]=true; if(e.code==='Escape') togglePause(); if(e.code==='KeyE'){ if(player.canInteract){ const nearby = interactors.find(it=> (it.kind==='sign' && Math.abs((it.x+it.w/2)-(player.x+player.w/2))<40) ); if(nearby) openPanelFor(nearby.label); } } });
+  window.addEventListener('keyup', (e)=> keys[e.code]=false);
+
+  function togglePause(){ if(!playing || finished) return; isPaused = !isPaused; pause.hidden = !isPaused; }
+
+  // Buttons
+  startBtn.onclick = ()=>{ menu.hidden=true; reset(); playing=true; };
+  howBtn.onclick = ()=> alert('Controls:\n• Left/Right: move\n• Space: jump\n• E: interact near glowing signs\n• Esc: pause');
+  resumeBtn.onclick = ()=> togglePause();
+  restartBtn.onclick = ()=>{ location.reload(); };
+  shareBtn.onclick = ()=>{ shareSummary(); };
+
+  // Reset
+  function reset(){ player.x = 80; player.y = H-GROUND_H-40; player.vx=0; player.vy=0; player.onGround=false; player.canInteract=false; camX = 0; totalTime = 0; tPrev = 0; finished=false; playing=true; isPaused=false; checkpointX = 80; buildWorld(); setStageBadge(); }
+
+  function updateCheckpoint(){ const st = currentStage(); const target = stages[st.index].start + 40; if(target>checkpointX) checkpointX = target; }
+  function respawn(msg){ showToast(msg||'Respawn'); totalTime += 1.2; player.x = checkpointX; player.y = H-GROUND_H - player.h; player.vx = 0; player.vy = 0; }
+
+  // Physics + update (time-based dt)
+  function update(dt){
+    // Controls
+    const wantLeft  = keys['ArrowLeft'] || keys['KeyA'];
+    const wantRight = keys['ArrowRight']|| keys['KeyD'];
+    const wantJump = keys['Space'] || keys['ArrowUp'] || keys['PgUp'];
+
+    if(wantLeft) player.vx = -moveSpeed; else if(wantRight) player.vx = moveSpeed; else {
+      const sign = Math.sign(player.vx); const mag = Math.max(0, Math.abs(player.vx) - 900*dt); player.vx = sign*mag; if(Math.abs(player.vx)<1) player.vx=0;
+    }
+    if(wantJump && player.onGround){ player.vy = jumpVy; player.onGround = false; }
+
+    // Gravity
+    player.vy += gravity*dt; if(player.vy>1200) player.vy=1200;
+
+    // Move + collide X
+    player.x += player.vx*dt;
+    for(const p of platforms){ const a = {x:player.x, y:player.y, w:player.w, h:player.h}; if(rectsOverlap(a, p)){ if(player.vx>0){ player.x = p.x - player.w; player.vx = 0; } else if(player.vx<0){ player.x = p.x + p.w; player.vx = 0; } } }
+
+    // Movers update
+    for(const m of movers){ m.t += dt; m.y = m.baseY + Math.sin(m.t*1.2)*m.amp; }
+
+    // Move + collide Y
+    player.y += player.vy*dt; player.onGround = false;
+    for(const p of [...platforms, ...movers]){ const a = {x:player.x, y:player.y, w:player.w, h:player.h}; if(rectsOverlap(a, p)){
+        if(player.vy>0){ 
+          player.y = p.y - player.h; player.vy = 0; player.onGround = true;
+        } else if(player.vy<0){ 
+          player.y = p.y + p.h; player.vy = 0;
+        }
+      } }
+
+    // Enemies
+   for (let i = enemies.length - 1; i >= 0; i--) {
+      const b = enemies[i];
+      b.x += b.dir * 60 * dt;
+      if (b.x < b.left || b.x > b.right) b.dir *= -1;
+
+      if (rectsOverlap(player, b)) {
+        if (player.vy > 100 && player.y + b.h - 6 <= b.y) {
+          enemies.splice(i, 1);
+          showToast('Bug squashed!');
+          player.vy = jumpVy * 0.7;
+        } else {
+          respawn('Hit by enemy!');
+        }
+      }
+    }
+
+    // Hazards
+    for(const h of hazards){ if(rectsOverlap(player, h)){ respawn('Hit hazard!'); break; } }
+    
+    // Pits
+    if(player.y>H){ respawn('Fell into pit!'); return; }
+    
+    // Finish
+    if(player.x > WORLD_LEN-180){ showFinish(); }
+
+    // Camera + UI
+    camX = clamp(player.x - W*0.35, 0, WORLD_LEN - W);
+    const near = interactors.some(it=> it.kind==='sign' && Math.abs((it.x+it.w/2)-(player.x+player.w/2))<40);
+    player.canInteract = near; setStageBadge(); updateCheckpoint();
+  }
+
+  // Draw
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    
+    // Background gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, H);
+    gradient.addColorStop(0, '#0f172a');
+    gradient.addColorStop(1, '#0b1324');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0,0,W,H);
+    
+    // Stars
+    ctx.globalAlpha=.3;
+    ctx.fillStyle='#22d3ee';
+    for(let i=0;i<40;i++){
+      const x=((i*200 - camX*0.2)%W+W)%W;
+      const y= (i*53)%H;
+      ctx.fillRect(x, y, 2, 2);
+    }
+    ctx.globalAlpha=1;
+
+    // World
+    ctx.save(); ctx.translate(-camX, 0);
+    
+    // Platforms
+    for(const p of platforms){
+      ctx.fillStyle = p.type==='ground'? '#1f2937' : '#374151';
+      ctx.fillRect(p.x, p.y, p.w, p.h);
+      // Add glow effect to ledges
+      if(p.type==='ledge'){
+        ctx.shadowColor = '#22d3ee';
+        ctx.shadowBlur = 10;
+        ctx.fillRect(p.x, p.y, p.w, p.h);
+        ctx.shadowBlur = 0;
+      }
+    }
+    
+    // Moving platforms with glow
+    for(const m of movers){
+      ctx.shadowColor = '#a78bfa';
+      ctx.shadowBlur = 15;
+      ctx.fillStyle = '#6366f1';
+      ctx.fillRect(m.x, m.y, m.w, m.h);
+      ctx.shadowBlur = 0;
+    }
+    
+    // Interactive elements
+    for(const s of interactors){
+      if(s.kind==='sign'){ drawSign(s); }
+      if(s.kind==='finish'){ drawGate(s); }
+    }
+    
+    // Enemies with glow
+    for(const b of enemies){
+      ctx.shadowColor = '#ef4444';
+      ctx.shadowBlur = 10;
+      ctx.fillStyle = '#dc2626';
+      ctx.fillRect(b.x, b.y, b.w, b.h);
+      ctx.shadowBlur = 0;
+    }
+    
+    // Hazards
+    for(const hz of hazards){ drawSpikes(hz); }
+    
+    // Player with glow
+    ctx.shadowColor = '#22d3ee';
+    ctx.shadowBlur = 15;
+    ctx.fillStyle = '#06b6d4';
+    ctx.fillRect(player.x, player.y, player.w, player.h);
+    ctx.shadowBlur = 0;
+    
+    ctx.restore();
+
+    // HUD
+    timeBadge.textContent = `Time: ${fmtTime(totalTime)}`;
+    hintBadge.textContent = player.canInteract ? 'Press E to open panel' : 'Arrows: move • Space: jump • E: interact • Esc: pause';
+  }
+
+  function drawSign(s){
+    // Sign post
+    ctx.fillStyle = '#64748b';
+    ctx.fillRect(s.x, s.y, s.w, s.h);
+    // Glowing sign board
+    ctx.shadowColor = '#22d3ee';
+    ctx.shadowBlur = 20;
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(s.x-6, s.y-16, s.w+12, 12);
+    ctx.shadowBlur = 0;
+    // Sign glow ring
+    ctx.strokeStyle = '#22d3ee';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(s.x-8, s.y-18, s.w+16, 16);
+  }
+
+  function drawGate(g){
+    // Gate with purple glow
+    ctx.shadowColor = '#a78bfa';
+    ctx.shadowBlur = 25;
+    ctx.fillStyle = '#7c3aed';
+    ctx.fillRect(g.x, g.y, g.w, g.h);
+    ctx.shadowBlur = 0;
+    // Top decoration
+    ctx.fillStyle = '#22d3ee';
+    ctx.fillRect(g.x-8, g.y-8, g.w+16, 6);
+  }
+
+  function drawSpikes(h){
+    const spikes = Math.max(1, Math.floor(h.w/12));
+    ctx.fillStyle = '#dc2626';
+    ctx.shadowColor = '#ef4444';
+    ctx.shadowBlur = 8;
+    for(let i=0;i<spikes;i++){
+      const sx = h.x + i*(h.w/spikes);
+      const w = h.w/spikes;
+      ctx.beginPath();
+      ctx.moveTo(sx, h.y+h.h);
+      ctx.lineTo(sx+w/2, h.y);
+      ctx.lineTo(sx+w, h.y+h.h);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+  }
+
+  // Main loop
+  function loop(ts){
+    if(!tPrev) tPrev = ts;
+    const dt = Math.min(0.03, (ts-tPrev)/1000);
+    tPrev = ts;
+    if(playing && !isPaused && !finished){
+      totalTime += dt;
+      update(dt);
+    }
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
