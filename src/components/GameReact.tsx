@@ -13,6 +13,7 @@ const GameReact = () => {
     timeBadge: 'Time: 0:00',
     hintBadge: 'Arrows: move • Space: jump • E: interact • Esc: pause',
     panelContent: '',
+    panelType: '',
     summary: '',
     shareText: ''
   });
@@ -48,6 +49,7 @@ const GameReact = () => {
       timeBadge: 'Time: 0:00',
       hintBadge: 'Arrows: move • Space: jump • E: interact • Esc: pause',
       panelContent: '',
+      panelType: '',
       summary: '',
       shareText: ''
     });
@@ -481,66 +483,7 @@ const GameReact = () => {
   };
 
   const openPanelFor = (label: string) => {
-    let content = '';
-    switch(label) {
-      case 'Visual Meeting':
-        content = `
-          <div class="text-center space-y-6">
-            <h1 class="text-3xl font-black gradient-text mb-6">Nice to Meet You!</h1>
-            <div class="flex justify-center gap-4 mb-6">
-              <div class="w-32 h-40 rounded-lg border-4 border-white/20 overflow-hidden shadow-lg">
-                <img src="/lovable-uploads/9bf7c0b4-23c1-4ec2-a4d5-ed5137a0be11.png" alt="Profile Photo 1" class="w-full h-full object-cover" />
-              </div>
-              <div class="w-32 h-40 rounded-lg border-4 border-white/20 overflow-hidden shadow-lg">
-                <img src="/lovable-uploads/068659de-f869-450a-b83d-e54825c1289b.png" alt="Profile Photo 2" class="w-full h-full object-cover" />
-              </div>
-              <div class="w-32 h-40 rounded-lg border-4 border-white/20 overflow-hidden shadow-lg">
-                <img src="/lovable-uploads/5030b439-4834-4741-b23c-eb90d2f0668b.png" alt="Profile Photo 3" class="w-full h-full object-cover" />
-              </div>
-            </div>
-            <p class="text-lg opacity-90">Hi, I'm ${CONTENT.candidate.name}</p>
-            <p class="text-base leading-relaxed opacity-80">Welcome to my interactive resume! Let's start this journey together.</p>
-          </div>
-        `;
-        break;
-      case 'About':
-        content = `
-          <div class="text-center space-y-4">
-            <h1 class="text-3xl font-black gradient-text mb-4">About – ${CONTENT.candidate.name}</h1>
-            <p class="text-lg opacity-90">${CONTENT.candidate.title}</p>
-            <p class="text-base leading-relaxed">${CONTENT.candidate.about}</p>
-          </div>
-        `;
-        break;
-      case 'Skills':
-        content = `
-          <div class="text-center space-y-4">
-            <h1 class="text-3xl font-black gradient-text mb-6">Skills</h1>
-            <div class="flex flex-wrap gap-3 justify-center">
-              ${CONTENT.skills.map(s => `<span class="px-4 py-2 bg-secondary/80 rounded-full text-sm font-semibold border border-white/10 hover:bg-secondary transition-colors">${s}</span>`).join('')}
-            </div>
-          </div>
-        `;
-        break;
-      case 'Projects':
-        content = `
-          <div class="text-center space-y-4">
-            <h1 class="text-3xl font-black gradient-text mb-6">Projects</h1>
-            <div class="space-y-4 text-left">
-              ${CONTENT.projects.map(p => `
-                <div class="p-4 bg-secondary/20 rounded-lg border border-white/10">
-                  <h3 class="text-xl font-bold mb-2">
-                    <a href="${p.url}" target="_blank" class="text-primary hover:text-primary/80 transition-colors underline decoration-primary/30 hover:decoration-primary">${p.name}</a>
-                  </h3>
-                  <p class="text-base leading-relaxed">${p.note}</p>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        `;
-        break;
-    }
-    setGameState(prev => ({ ...prev, showPanel: true, panelContent: content }));
+    setGameState(prev => ({ ...prev, showPanel: true, panelType: label }));
   };
 
   return (
@@ -626,7 +569,70 @@ const GameReact = () => {
       {gameState.showPanel && (
         <div className="fixed inset-0 grid place-items-center z-50 backdrop-blur-md bg-black/50">
           <div className="card-game w-full max-w-[800px] text-center p-8 mx-4 max-h-[80vh] overflow-y-auto">
-            <div dangerouslySetInnerHTML={{ __html: gameState.panelContent }} />
+            {/* Dynamic panel content based on panelType */}
+            {gameState.panelType === 'Visual Meeting' && (
+              <div className="text-center space-y-6">
+                <h1 className="text-3xl font-black gradient-text mb-6">Nice to Meet You!</h1>
+                <div className="flex justify-center gap-4 mb-6">
+                  <div className="w-32 h-40 rounded-lg border-4 border-white/20 overflow-hidden shadow-lg">
+                    <img src="/lovable-uploads/9bf7c0b4-23c1-4ec2-a4d5-ed5137a0be11.png" alt="Profile Photo 1" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="w-32 h-40 rounded-lg border-4 border-white/20 overflow-hidden shadow-lg">
+                    <img src="/lovable-uploads/068659de-f869-450a-b83d-e54825c1289b.png" alt="Profile Photo 2" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="w-32 h-40 rounded-lg border-4 border-white/20 overflow-hidden shadow-lg">
+                    <img src="/lovable-uploads/5030b439-4834-4741-b23c-eb90d2f0668b.png" alt="Profile Photo 3" className="w-full h-full object-cover" />
+                  </div>
+                </div>
+                <p className="text-lg opacity-90">Hi, I'm {CONTENT.candidate.name}</p>
+                <p className="text-base leading-relaxed opacity-80">Welcome to my interactive resume! Let's start this journey together.</p>
+              </div>
+            )}
+            
+            {gameState.panelType === 'About' && (
+              <div className="text-center space-y-4">
+                <h1 className="text-3xl font-black gradient-text mb-4">About – {CONTENT.candidate.name}</h1>
+                <p className="text-lg opacity-90">{CONTENT.candidate.title}</p>
+                <p className="text-base leading-relaxed">{CONTENT.candidate.about}</p>
+              </div>
+            )}
+            
+            {gameState.panelType === 'Skills' && (
+              <div className="text-center space-y-4">
+                <h1 className="text-3xl font-black gradient-text mb-6">Skills</h1>
+                <div className="flex flex-wrap gap-3 justify-center">
+                  {CONTENT.skills.map(skill => (
+                    <span key={skill} className="px-4 py-2 bg-secondary/80 rounded-full text-sm font-semibold border border-white/10 hover:bg-secondary transition-colors">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {gameState.panelType === 'Projects' && (
+              <div className="text-center space-y-4">
+                <h1 className="text-3xl font-black gradient-text mb-6">Projects</h1>
+                <div className="space-y-4 text-left">
+                  {CONTENT.projects.map((project, index) => (
+                    <div key={index} className="p-4 bg-secondary/20 rounded-lg border border-white/10">
+                      <h3 className="text-xl font-bold mb-2">
+                        <a 
+                          href={project.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-primary hover:text-primary/80 transition-colors underline decoration-primary/30 hover:decoration-primary"
+                        >
+                          {project.name}
+                        </a>
+                      </h3>
+                      <p className="text-base leading-relaxed">{project.note}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             <button 
               onClick={() => setGameState(prev => ({ ...prev, showPanel: false }))}
               className="mt-6 px-8 py-3 rounded-full bg-white text-black font-bold hover:bg-gray-100 transition-colors"
