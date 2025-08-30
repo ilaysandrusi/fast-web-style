@@ -9,7 +9,7 @@ const GameReact = () => {
     showPanel: false,
     showFinish: false,
     showShareFallback: false,
-    stageBadge: 'Stage: 1/4 – About',
+    stageBadge: 'Stage: 1/5 – Visual Meeting',
     timeBadge: 'Time: 0:00',
     hintBadge: 'Arrows: move • Space: jump • E: interact • Esc: pause',
     panelContent: '',
@@ -56,10 +56,11 @@ const GameReact = () => {
     const jumpVy = -600;
 
     const stages = [
-      {name:'About', start:0, len:1400, difficulty:0},
-      {name:'Skills', start:1400, len:1600, difficulty:1},
-      {name:'Projects', start:3000, len:1800, difficulty:2},
-      {name:'Links', start:4800, len:1200, difficulty:3},
+      {name:'Visual Meeting', start:0, len:1200, difficulty:0},
+      {name:'About', start:1200, len:1400, difficulty:0},
+      {name:'Skills', start:2600, len:1600, difficulty:1},
+      {name:'Projects', start:4200, len:1800, difficulty:2},
+      {name:'End Stage', start:6000, len:1200, difficulty:3},
     ];
 
     // Game state
@@ -110,31 +111,35 @@ const GameReact = () => {
     const lastStage = stages[stages.length-1];
     const WORLD_LEN = lastStage.start + lastStage.len + 400;
 
-    // Stage 1: flat intro + one simple blocker
+    // Stage 1: Visual Meeting - flat intro, easy start
     groundWithGaps(stages[0], []);
-    game.interactors.push(sign(stages[0].start+300, 'About'));
-    game.hazards.push(blocker(stages[0].start+600, H-GROUND_H-22, 30, 22));
+    game.interactors.push(sign(stages[0].start+300, 'Visual Meeting'));
 
-    // Stage 2: two gaps + ledge + small blocker
-    groundWithGaps(stages[1], [gap(stages[1].start+420, 80), gap(stages[1].start+900, 120)]);
-    game.platforms.push({x:stages[1].start+1200, y:H-GROUND_H-60, w:220, h:20, type:'ledge'});
-    game.interactors.push(sign(stages[1].start+250, 'Skills'));
-    game.hazards.push(blocker(stages[1].start+1050, H-GROUND_H-24, 36, 24));
+    // Stage 2: About - simple obstacle
+    groundWithGaps(stages[1], []);
+    game.interactors.push(sign(stages[1].start+300, 'About'));
+    game.hazards.push(blocker(stages[1].start+800, H-GROUND_H-22, 30, 22));
 
-    // Stage 3: larger pit with moving platform + enemy + blocker
-    groundWithGaps(stages[2], [gap(stages[2].start+380, 140)]);
-    game.movers.push(movingPlatform(stages[2].start+430, H-GROUND_H-80, 120, 18, 0, 40));
-    game.enemies.push(bug(stages[2].start+1100, H-GROUND_H-24, 180));
-    game.platforms.push({x:stages[2].start+1350, y:H-GROUND_H-80, w:180, h:20, type:'ledge'});
-    game.interactors.push(sign(stages[2].start+260, 'Projects'));
-    game.hazards.push(blocker(stages[2].start+1520, H-GROUND_H-28, 44, 28));
+    // Stage 3: Skills - two gaps + ledge + small blocker
+    groundWithGaps(stages[2], [gap(stages[2].start+420, 80), gap(stages[2].start+900, 120)]);
+    game.platforms.push({x:stages[2].start+1200, y:H-GROUND_H-60, w:220, h:20, type:'ledge'});
+    game.interactors.push(sign(stages[2].start+250, 'Skills'));
+    game.hazards.push(blocker(stages[2].start+1050, H-GROUND_H-24, 36, 24));
 
-    // Stage 4: tighter jumps + finish + proper ending floor
-    groundWithGaps(stages[3], [gap(stages[3].start+360, 90), gap(stages[3].start+720, 110)]);
-    game.interactors.push(sign(stages[3].start+120, 'Links'));
+    // Stage 4: Projects - larger pit with moving platform + enemy + blocker
+    groundWithGaps(stages[3], [gap(stages[3].start+380, 140)]);
+    game.movers.push(movingPlatform(stages[3].start+430, H-GROUND_H-80, 120, 18, 0, 40));
+    game.enemies.push(bug(stages[3].start+1100, H-GROUND_H-24, 180));
+    game.platforms.push({x:stages[3].start+1350, y:H-GROUND_H-80, w:180, h:20, type:'ledge'});
+    game.interactors.push(sign(stages[3].start+260, 'Projects'));
+    game.hazards.push(blocker(stages[3].start+1520, H-GROUND_H-28, 44, 28));
+
+    // Stage 5: End Stage - final challenge + finish gate
+    groundWithGaps(stages[4], [gap(stages[4].start+360, 90), gap(stages[4].start+720, 110)]);
+    game.interactors.push(sign(stages[4].start+120, 'End Stage'));
     game.interactors.push(finishGate(WORLD_LEN-160));
-    game.hazards.push(blocker(stages[3].start+260, H-GROUND_H-26, 34, 26));
-    game.hazards.push(blocker(stages[3].start+540, H-GROUND_H-30, 40, 30));
+    game.hazards.push(blocker(stages[4].start+260, H-GROUND_H-26, 34, 26));
+    game.hazards.push(blocker(stages[4].start+540, H-GROUND_H-30, 40, 30));
     
     // Extra ground at the very end to ensure no falling
     addGround(WORLD_LEN - 200, 200);
@@ -271,7 +276,7 @@ const GameReact = () => {
         setGameState(prev => ({
           ...prev,
           showFinish: true,
-          summary: `Completed 4/4 stages in ${fmtTime(game.totalTime)}.`
+          summary: `Completed 5/5 stages in ${fmtTime(game.totalTime)}.`
         }));
         game.finished = true;
         game.playing = false;
@@ -292,7 +297,7 @@ const GameReact = () => {
       // Update UI
       setGameState(prev => ({
         ...prev,
-        stageBadge: `Stage: ${st.index+1}/4 – ${st.name}`,
+        stageBadge: `Stage: ${st.index+1}/5 – ${st.name}`,
         timeBadge: `Time: ${fmtTime(game.totalTime)}`,
         hintBadge: game.player.canInteract ? 'Press E to open panel' : 'Arrows: move • Space: jump • E: interact • Esc: pause'
       }));
@@ -439,6 +444,20 @@ const GameReact = () => {
   const openPanelFor = (label: string) => {
     let content = '';
     switch(label) {
+      case 'Visual Meeting':
+        content = `
+          <div class="text-center space-y-6">
+            <h1 class="text-3xl font-black gradient-text mb-6">Nice to Meet You!</h1>
+            <div class="flex justify-center mb-6">
+              <div class="w-32 h-32 bg-gradient-to-br from-primary to-secondary rounded-full border-4 border-white/20 flex items-center justify-center text-4xl font-bold shadow-lg">
+                📸
+              </div>
+            </div>
+            <p class="text-lg opacity-90">Hi, I'm ${CONTENT.candidate.name}</p>
+            <p class="text-base leading-relaxed opacity-80">Welcome to my interactive resume! Let's start this journey together.</p>
+          </div>
+        `;
+        break;
       case 'About':
         content = `
           <div class="text-center space-y-4">
@@ -475,13 +494,16 @@ const GameReact = () => {
           </div>
         `;
         break;
-      case 'Links':
+      case 'End Stage':
         content = `
-          <div class="text-center space-y-4">
-            <h1 class="text-3xl font-black gradient-text mb-6">Connect With Me</h1>
+          <div class="text-center space-y-6">
+            <h1 class="text-3xl font-black gradient-text mb-6">🎉 Congratulations!</h1>
+            <p class="text-lg opacity-90 mb-6">You've completed my interactive resume journey!</p>
+            <h2 class="text-xl font-bold mb-4">Let's Connect!</h2>
             <div class="flex gap-3 flex-wrap justify-center">
               ${CONTENT.links.map(l => `<a href="${l.url}" target="_blank" class="btn-game px-6 py-3 text-base font-bold">${l.label}</a>`).join('')}
             </div>
+            <p class="text-sm opacity-70 mt-4">Thanks for playing! Feel free to reach out.</p>
           </div>
         `;
         break;
@@ -520,7 +542,7 @@ const GameReact = () => {
             <p className="opacity-80 mb-6 text-foreground/90 leading-relaxed">
               A fun and challenging way to get to know me - with every level you unlock, you'll discover more about who I am.<br/>
               Use Arrows to move, Space to jump. Press E near the info panels to open it.<br/> 
-              4 short stages.
+              5 exciting stages to discover.
             </p>
             <div className="flex gap-3 justify-center flex-wrap">
               <button onClick={startGame} className="btn-game px-8 py-3">Start Game</button>
