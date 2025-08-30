@@ -167,13 +167,22 @@ const GameReact = () => {
       const wantRight = game.keys['ArrowRight'] || game.keys['KeyD'];
       const wantJump = game.keys['Space'] || game.keys['ArrowUp'];
 
-      if (wantLeft) game.player.vx = -moveSpeed;
-      else if (wantRight) game.player.vx = moveSpeed;
-      else {
-        const sign = Math.sign(game.player.vx);
-        const mag = Math.max(0, Math.abs(game.player.vx) - 900*dt);
-        game.player.vx = sign*mag;
-        if (Math.abs(game.player.vx) < 1) game.player.vx = 0;
+      // Smoother movement with acceleration
+      const acceleration = 1200; // pixels/s^2
+      const friction = 800; // pixels/s^2
+      const maxSpeed = 350; // increased for smoother feel
+
+      if (wantLeft) {
+        game.player.vx = Math.max(-maxSpeed, game.player.vx - acceleration * dt);
+      } else if (wantRight) {
+        game.player.vx = Math.min(maxSpeed, game.player.vx + acceleration * dt);
+      } else {
+        // Apply friction for smooth deceleration
+        if (game.player.vx > 0) {
+          game.player.vx = Math.max(0, game.player.vx - friction * dt);
+        } else if (game.player.vx < 0) {
+          game.player.vx = Math.min(0, game.player.vx + friction * dt);
+        }
       }
 
       if (wantJump && game.player.onGround) {
@@ -181,7 +190,8 @@ const GameReact = () => {
         game.player.onGround = false;
       }
 
-      game.player.vy += gravity*dt;
+      // Smoother gravity with terminal velocity
+      game.player.vy += gravity * dt;
       if (game.player.vy > 1200) game.player.vy = 1200;
 
       // Move X
@@ -417,16 +427,48 @@ const GameReact = () => {
     let content = '';
     switch(label) {
       case 'About':
-        content = `<h2>About – ${CONTENT.candidate.name}</h2><p>${CONTENT.candidate.about}</p>`;
+        content = `
+          <div class="text-center space-y-4">
+            <h1 class="text-3xl font-black gradient-text mb-4">About – ${CONTENT.candidate.name}</h1>
+            <p class="text-lg opacity-90">${CONTENT.candidate.title}</p>
+            <p class="text-base leading-relaxed">${CONTENT.candidate.about}</p>
+          </div>
+        `;
         break;
       case 'Skills':
-        content = `<h2>Skills</h2><div class="flex flex-wrap gap-2 justify-center">${CONTENT.skills.map(s => `<span class="px-3 py-1 bg-secondary rounded-full text-sm">${s}</span>`).join('')}</div>`;
+        content = `
+          <div class="text-center space-y-4">
+            <h1 class="text-3xl font-black gradient-text mb-6">Skills</h1>
+            <div class="flex flex-wrap gap-3 justify-center">
+              ${CONTENT.skills.map(s => `<span class="px-4 py-2 bg-secondary/80 rounded-full text-sm font-semibold border border-white/10 hover:bg-secondary transition-colors">${s}</span>`).join('')}
+            </div>
+          </div>
+        `;
         break;
       case 'Projects':
-        content = `<h2>Projects</h2>${CONTENT.projects.map(p => `<p><strong>${p.name}</strong> – ${p.note}</p>`).join('')}`;
+        content = `
+          <div class="text-center space-y-4">
+            <h1 class="text-3xl font-black gradient-text mb-6">Projects</h1>
+            <div class="space-y-4 text-left">
+              ${CONTENT.projects.map(p => `
+                <div class="p-4 bg-secondary/20 rounded-lg border border-white/10">
+                  <h3 class="text-xl font-bold text-primary mb-2">${p.name}</h3>
+                  <p class="text-base leading-relaxed">${p.note}</p>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
         break;
       case 'Links':
-        content = `<h2>Links</h2><div class="flex gap-2 flex-wrap justify-center">${CONTENT.links.map(l => `<a href="${l.url}" target="_blank" class="btn-game px-4 py-2">${l.label}</a>`).join('')}</div>`;
+        content = `
+          <div class="text-center space-y-4">
+            <h1 class="text-3xl font-black gradient-text mb-6">Connect With Me</h1>
+            <div class="flex gap-3 flex-wrap justify-center">
+              ${CONTENT.links.map(l => `<a href="${l.url}" target="_blank" class="btn-game px-6 py-3 text-base font-bold">${l.label}</a>`).join('')}
+            </div>
+          </div>
+        `;
         break;
     }
     setGameState(prev => ({ ...prev, showPanel: true, panelContent: content }));
@@ -484,11 +526,11 @@ const GameReact = () => {
       {/* Panel Overlay */}
       {gameState.showPanel && (
         <div className="fixed inset-0 grid place-items-center z-50 backdrop-blur-md bg-black/50">
-          <div className="card-game w-full max-w-[760px] text-center p-8 mx-4">
+          <div className="card-game w-full max-w-[800px] text-center p-8 mx-4 max-h-[80vh] overflow-y-auto">
             <div dangerouslySetInnerHTML={{ __html: gameState.panelContent }} />
             <button 
               onClick={() => setGameState(prev => ({ ...prev, showPanel: false }))}
-              className="mt-4 px-8 py-3 rounded-full bg-white text-black font-bold"
+              className="mt-6 px-8 py-3 rounded-full bg-white text-black font-bold hover:bg-gray-100 transition-colors"
             >
               Close
             </button>
