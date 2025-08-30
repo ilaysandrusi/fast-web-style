@@ -20,20 +20,19 @@ const GameReact = () => {
   // Game content
   const CONTENT = {
     candidate: {
-      name: 'Your Name',
-      title: 'Web Developer',
-      about: 'A passionate developer creating immersive web experiences with modern technologies and gaming-inspired aesthetics.',
+      name: 'Ilay Sandrusi',
+      title: 'QA Tester',
+      about: 'A curious and thorough software tester, with strong technical skills and a quick learning ability. I know how to dive into details, identify bugs, and perform comprehensive testing.',
     },
-    skills: ['React','TypeScript','JavaScript', 'Tailwind CSS', 'Node.js', 'Next.js', 'HTML5 Canvas', 'WebGL', 'Three.js', 'Animation', 'Game Development', 'UI/UX Design', 'Performance Optimization'],
+    skills: ['Attention to Detail', 'Bug Tracking', 'Teamwork', 'Jira', 'TestRail', 'Postman', 'Swagger', 'SQL', 'REST API', 'HTML/CSS', 'Agile (Scrum)', 'Waterfall', 'STD', 'STP', 'STR', 'SRS', 'XML', 'JSON', 'Notepad++'],
     projects: [
-      {name:'Gaming Portfolio', url:'#', note:'Interactive resume game built with HTML5 Canvas, featuring physics-based gameplay and smooth animations.'},
-      {name:'Web App Dashboard', url:'#', note:'Modern React dashboard with dark theme, real-time data visualization, and responsive design.'},
+      {name:'Software Test Report', url:'https://ilaysandrusi.github.io/STR-TMS/STR.pdf', note:'Software Test Report on website, covering functional, accessibility, UI/UX, performance, E2E, and more... Executed 1,132 test cases, reported 108 bugs of varying severity, and produced a structured STR document.'},
     ],
     links: [
-      {label:'GitHub', url:'https://github.com'},
-      {label:'LinkedIn', url:'https://linkedin.com'},
-      {label:'Portfolio', url:'#'},
-      {label:'Email', url:'mailto:hello@example.com'},
+      {label:'GitHub', url:'https://github.com/ilaysandrusi'},
+      {label:'LinkedIn', url:'https://www.linkedin.com/in/ilay-sandrusi'},
+      {label:'Portfolio', url:'https://ilaysandrusi.github.io/my-system'},
+      {label:'Email', url:'mailto:ilaysan159@gmail.com'},
     ],
   };
 
