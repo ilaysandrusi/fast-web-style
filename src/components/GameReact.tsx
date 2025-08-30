@@ -129,12 +129,15 @@ const GameReact = () => {
     game.interactors.push(sign(stages[2].start+260, 'Projects'));
     game.hazards.push(blocker(stages[2].start+1520, H-GROUND_H-28, 44, 28));
 
-    // Stage 4: tighter jumps + finish
+    // Stage 4: tighter jumps + finish + proper ending floor
     groundWithGaps(stages[3], [gap(stages[3].start+360, 90), gap(stages[3].start+720, 110)]);
     game.interactors.push(sign(stages[3].start+120, 'Links'));
     game.interactors.push(finishGate(WORLD_LEN-160));
     game.hazards.push(blocker(stages[3].start+260, H-GROUND_H-26, 34, 26));
     game.hazards.push(blocker(stages[3].start+540, H-GROUND_H-30, 40, 30));
+    
+    // Extra ground at the very end to ensure no falling
+    addGround(WORLD_LEN - 200, 200);
 
     // Helper functions
     const rectsOverlap = (a: any, b: any) => (a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y);
@@ -395,6 +398,16 @@ const GameReact = () => {
     // Input handling
     const handleKeyDown = (e: KeyboardEvent) => {
       game.keys[e.code] = true;
+      
+      // ESC key for pause/unpause
+      if (e.code === 'Escape') {
+        if (!game.finished) {
+          game.isPaused = !game.isPaused;
+          setGameState(prev => ({ ...prev, showPause: game.isPaused }));
+        }
+      }
+      
+      // E key for interaction
       if (e.code === 'KeyE' && game.player.canInteract) {
         const nearby = game.interactors.find(it => 
           it.kind === 'sign' && Math.abs((it.x + it.w/2) - (game.player.x + game.player.w/2)) < 40
@@ -519,6 +532,36 @@ const GameReact = () => {
             <p className="mt-3 opacity-70 text-sm">
               Tip: Press <span className="kbd">E</span> near glowing signs to open info panels.
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Pause Overlay */}
+      {gameState.showPause && (
+        <div className="fixed inset-0 grid place-items-center z-50 backdrop-blur-md bg-black/50">
+          <div className="card-game w-full max-w-[600px] text-center p-8 mx-4">
+            <h2 className="text-3xl font-black gradient-text mb-6">Game Paused</h2>
+            <p className="mb-6 text-lg opacity-90">Take a break! Your progress is saved.</p>
+            <div className="space-y-4">
+              <div className="flex gap-3 flex-wrap justify-center mb-4">
+                {CONTENT.links.map(l => (
+                  <a key={l.label} href={l.url} target="_blank" rel="noopener" className="btn-game px-4 py-2 text-sm">
+                    {l.label}
+                  </a>
+                ))}
+              </div>
+              <button 
+                onClick={() => {
+                  if (gameStateRef.current) {
+                    gameStateRef.current.isPaused = false;
+                  }
+                  setGameState(prev => ({ ...prev, showPause: false }));
+                }}
+                className="px-8 py-3 rounded-full bg-white text-black font-bold hover:bg-gray-100 transition-colors"
+              >
+                Resume Game
+              </button>
+            </div>
           </div>
         </div>
       )}
