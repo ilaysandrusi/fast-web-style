@@ -455,14 +455,14 @@ const GameReact = () => {
           <div class="text-center space-y-6">
             <h1 class="text-3xl font-black gradient-text mb-6">Nice to Meet You!</h1>
             <div class="flex justify-center gap-4 mb-6">
-              <div class="w-24 h-24 bg-gradient-to-br from-primary to-secondary rounded-full border-4 border-white/20 flex items-center justify-center text-2xl font-bold shadow-lg">
-                📸
+              <div class="w-24 h-24 rounded-full border-4 border-white/20 overflow-hidden shadow-lg">
+                <img src="/lovable-uploads/9bf7c0b4-23c1-4ec2-a4d5-ed5137a0be11.png" alt="Profile Photo 1" class="w-full h-full object-cover" />
               </div>
-              <div class="w-24 h-24 bg-gradient-to-br from-secondary to-accent rounded-full border-4 border-white/20 flex items-center justify-center text-2xl font-bold shadow-lg">
-                💻
+              <div class="w-24 h-24 rounded-full border-4 border-white/20 overflow-hidden shadow-lg">
+                <img src="/lovable-uploads/068659de-f869-450a-b83d-e54825c1289b.png" alt="Profile Photo 2" class="w-full h-full object-cover" />
               </div>
-              <div class="w-24 h-24 bg-gradient-to-br from-accent to-primary rounded-full border-4 border-white/20 flex items-center justify-center text-2xl font-bold shadow-lg">
-                🎮
+              <div class="w-24 h-24 rounded-full border-4 border-white/20 overflow-hidden shadow-lg">
+                <img src="/lovable-uploads/5030b439-4834-4741-b23c-eb90d2f0668b.png" alt="Profile Photo 3" class="w-full h-full object-cover" />
               </div>
             </div>
             <p class="text-lg opacity-90">Hi, I'm ${CONTENT.candidate.name}</p>
