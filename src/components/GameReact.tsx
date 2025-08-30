@@ -465,7 +465,9 @@ const GameReact = () => {
             <div class="space-y-4 text-left">
               ${CONTENT.projects.map(p => `
                 <div class="p-4 bg-secondary/20 rounded-lg border border-white/10">
-                  <h3 class="text-xl font-bold text-primary mb-2">${p.name}</h3>
+                  <h3 class="text-xl font-bold mb-2">
+                    <a href="${p.url}" target="_blank" class="text-primary hover:text-primary/80 transition-colors underline decoration-primary/30 hover:decoration-primary">${p.name}</a>
+                  </h3>
                   <p class="text-base leading-relaxed">${p.note}</p>
                 </div>
               `).join('')}
