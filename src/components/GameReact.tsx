@@ -64,6 +64,18 @@ const GameReact = () => {
     console.log('🎮 Starting game!');
     setGameState(prev => ({ ...prev, showMenu: false }));
     
+    // Preload images for instant display
+    const imageUrls = [
+      '/lovable-uploads/9bf7c0b4-23c1-4ec2-a4d5-ed5137a0be11.png',
+      '/lovable-uploads/068659de-f869-450a-b83d-e54825c1289b.png',
+      '/lovable-uploads/5030b439-4834-4741-b23c-eb90d2f0668b.png'
+    ];
+    
+    imageUrls.forEach(url => {
+      const img = new Image();
+      img.src = url;
+    });
+    
     // Initialize game logic
     const canvas = canvasRef.current;
     if (!canvas) return;
