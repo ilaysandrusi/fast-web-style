@@ -37,6 +37,29 @@ const GameReact = () => {
     ],
   };
 
+  const restartGame = () => {
+    // Reset all game state instantly
+    setGameState({
+      showMenu: false,
+      showPause: false,
+      showPanel: false,
+      showFinish: false,
+      showShareFallback: false,
+      stageBadge: 'Stage: 1/5 – Visual Meeting',
+      timeBadge: 'Time: 0:00',
+      hintBadge: 'Arrows: move • Space: jump • E: interact • Esc: pause',
+      panelContent: '',
+      summary: '',
+      shareText: ''
+    });
+    
+    // Reset game state reference
+    gameStateRef.current = null;
+    
+    // Restart the game immediately
+    setTimeout(startGame, 50); // Small delay to ensure state reset
+  };
+
   const startGame = () => {
     console.log('🎮 Starting game!');
     setGameState(prev => ({ ...prev, showMenu: false }));
@@ -617,8 +640,8 @@ const GameReact = () => {
               ))}
             </div>
             <button 
-              onClick={() => window.location.reload()}
-              className="mt-4 px-8 py-3 rounded-full bg-white text-black font-bold"
+              onClick={restartGame}
+              className="mt-4 px-8 py-3 rounded-full bg-white text-black font-bold hover:bg-gray-100 transition-colors"
             >
               Restart
             </button>
