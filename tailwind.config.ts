@@ -52,6 +52,13 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				// Gaming-specific colors
+				accent2: 'hsl(258 90% 66%)',
+				success: 'hsl(142 69% 58%)',
+				warning: 'hsl(38 92% 50%)',
+				danger: 'hsl(0 84% 60%)',
+				sky: 'hsl(220 39% 11%)',
+				ground: 'hsl(217 32% 6%)',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
