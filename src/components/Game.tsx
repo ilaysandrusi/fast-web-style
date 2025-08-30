@@ -610,17 +610,32 @@ const Game = () => {
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
 
-    // Button listeners
-    if (startBtn) startBtn.onclick = handleStart;
-    if (howBtn) howBtn.onclick = handleHow;
+    // Button listeners - with error checking
+    console.log('🔍 Attaching button listeners...');
+    if (startBtn) {
+      startBtn.onclick = handleStart;
+      console.log('✅ Start button listener attached');
+    } else {
+      console.error('❌ Start button not found!');
+    }
+    if (howBtn) {
+      howBtn.onclick = handleHow;
+      console.log('✅ How button listener attached');
+    } else {
+      console.error('❌ How button not found!');
+    }
     if (resumeBtn) resumeBtn.onclick = handleResume;
     if (restartBtn) restartBtn.onclick = handleRestart;
     if (shareBtn) shareBtn.onclick = handleShare;
 
     // Initialize
+    console.log('🎮 Initializing game components...');
     buildQuickLinks();
     buildWorld();
     setStageBadge();
+    
+    // Start the game loop
+    console.log('🔄 Starting game loop...');
     requestAnimationFrame(loop);
 
     console.log('🎮 Game initialized successfully!');

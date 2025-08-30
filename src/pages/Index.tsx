@@ -1,7 +1,7 @@
-import Game from "@/components/Game";
+import GameReact from "@/components/GameReact";
 
 const Index = () => {
-  return <Game />;
+  return <GameReact />;
 };
 
 export default Index;
