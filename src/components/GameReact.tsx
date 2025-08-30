@@ -505,19 +505,6 @@ const GameReact = () => {
           </div>
         `;
         break;
-      case 'End Stage':
-        content = `
-          <div class="text-center space-y-6">
-            <h1 class="text-3xl font-black gradient-text mb-6">🎉 Congratulations!</h1>
-            <p class="text-lg opacity-90 mb-6">You've completed my interactive resume journey!</p>
-            <h2 class="text-xl font-bold mb-4">Let's Connect!</h2>
-            <div class="flex gap-3 flex-wrap justify-center">
-              ${CONTENT.links.map(l => `<a href="${l.url}" target="_blank" class="btn-game px-6 py-3 text-base font-bold">${l.label}</a>`).join('')}
-            </div>
-            <p class="text-sm opacity-70 mt-4">Thanks for playing! Feel free to reach out.</p>
-          </div>
-        `;
-        break;
     }
     setGameState(prev => ({ ...prev, showPanel: true, panelContent: content }));
   };
