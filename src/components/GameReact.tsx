@@ -115,9 +115,15 @@ const GameReact = () => {
     groundWithGaps(stages[0], []);
     game.interactors.push(sign(stages[0].start+300, 'Visual Meeting'));
 
+    // Obstacle between Stage 1 and 2
+    game.hazards.push(blocker(stages[0].start+1100, H-GROUND_H-20, 28, 20));
+
     // Stage 2: About - simple obstacle
     groundWithGaps(stages[1], []);
     game.interactors.push(sign(stages[1].start+300, 'About'));
+
+    // Obstacle between Stage 2 and 3
+    game.hazards.push(blocker(stages[1].start+1300, H-GROUND_H-24, 32, 24));
     game.hazards.push(blocker(stages[1].start+800, H-GROUND_H-22, 30, 22));
 
     // Stage 3: Skills - two gaps + ledge + small blocker
@@ -448,9 +454,15 @@ const GameReact = () => {
         content = `
           <div class="text-center space-y-6">
             <h1 class="text-3xl font-black gradient-text mb-6">Nice to Meet You!</h1>
-            <div class="flex justify-center mb-6">
-              <div class="w-32 h-32 bg-gradient-to-br from-primary to-secondary rounded-full border-4 border-white/20 flex items-center justify-center text-4xl font-bold shadow-lg">
+            <div class="flex justify-center gap-4 mb-6">
+              <div class="w-24 h-24 bg-gradient-to-br from-primary to-secondary rounded-full border-4 border-white/20 flex items-center justify-center text-2xl font-bold shadow-lg">
                 📸
+              </div>
+              <div class="w-24 h-24 bg-gradient-to-br from-secondary to-accent rounded-full border-4 border-white/20 flex items-center justify-center text-2xl font-bold shadow-lg">
+                💻
+              </div>
+              <div class="w-24 h-24 bg-gradient-to-br from-accent to-primary rounded-full border-4 border-white/20 flex items-center justify-center text-2xl font-bold shadow-lg">
+                🎮
               </div>
             </div>
             <p class="text-lg opacity-90">Hi, I'm ${CONTENT.candidate.name}</p>
