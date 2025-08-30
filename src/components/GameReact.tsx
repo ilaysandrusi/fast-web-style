@@ -142,7 +142,6 @@ const GameReact = () => {
 
     // Stage 5: End Stage - final challenge + finish gate
     groundWithGaps(stages[4], [gap(stages[4].start+360, 90), gap(stages[4].start+720, 110)]);
-    game.interactors.push(sign(stages[4].start+120, 'End Stage'));
     game.interactors.push(finishGate(WORLD_LEN-160));
     game.hazards.push(blocker(stages[4].start+260, H-GROUND_H-26, 34, 26));
     game.hazards.push(blocker(stages[4].start+540, H-GROUND_H-30, 40, 30));
